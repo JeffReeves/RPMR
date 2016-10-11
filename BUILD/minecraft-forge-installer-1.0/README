@@ -1,0 +1,4 @@
+This is the readme for the minecraft-forge-installer.
+
+Edit the /etc/oracle-java.conf and /etc/minecraft-forge.conf 
+files to change the versions being installed.
