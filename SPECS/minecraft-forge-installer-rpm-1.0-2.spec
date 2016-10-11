@@ -1,5 +1,5 @@
 Name:		minecraft-forge-installer
-Release:	1
+Release:	2
 Summary:	Sets up Minecraft and Forge for you
 License:	Mixed
 Version:	1.0
