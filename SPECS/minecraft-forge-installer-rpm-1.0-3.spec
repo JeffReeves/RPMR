@@ -23,5 +23,5 @@ echo "Not cleaning up because more building is going to happen."
 /usr/bin/minecraft-forge.sh
 %attr(0655,root,root) %config /etc/oracle-java.conf
 %attr(0655,root,root) %config /etc/minecraft-forge.conf
-%doc %name-%version/README
+%attr(0644,root,root) %doc %name-%version/README
 
