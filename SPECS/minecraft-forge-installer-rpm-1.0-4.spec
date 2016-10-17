@@ -1,5 +1,5 @@
 Name:		minecraft-forge-installer
-Release:	3
+Release:	4
 Summary:	Sets up Minecraft and Forge for you
 License:	Mixed
 Version:	1.0
@@ -16,6 +16,18 @@ Note: The EULA.txt for Minecraft is automatically accepted during install.
 
 %clean
 echo "Not cleaning up because more building is going to happen."
+
+%pre
+echo "Preparing for installation..."
+
+%post
+echo "Installation successful. Review /usr/share/doc/minecraft-forge-installer for help."
+
+%preun
+echo "Preparing to uninstall..."
+
+%postun
+echo "Uninstall completed successfully."
 
 %files
 %defattr(0755,root,root)
