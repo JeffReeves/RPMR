@@ -12,12 +12,12 @@ $ mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
 ```
 
 The above mkdir command creates the following folders:
-/home/<user>/rpmbuild/BUILD
-/home/<user>/rpmbuild/BUILDROOT
-/home/<user>/rpmbuild/RPMS
-/home/<user>/rpmbuild/SOURCES
-/home/<user>/rpmbuild/SPECS
-/home/<user>/rpmbuild/SRPMS
+- /home/\<user\>/rpmbuild/BUILD
+- /home/\<user\>/rpmbuild/BUILDROOT
+- /home/\<user\>/rpmbuild/RPMS
+- /home/\<user\>/rpmbuild/SOURCES
+- /home/\<user\>/rpmbuild/SPECS
+- /home/\<user\>/rpmbuild/SRPMS
 
 
 Then create an .rpmmacros file to ensure that the building of RPMs occurs within the directories you made:
@@ -25,10 +25,10 @@ Then create an .rpmmacros file to ensure that the building of RPMs occurs within
 $ echo '%_topdir %(echo $HOME)/rpmbuild' > ~/.rpmmacros
 ```
 
-The above command creates a /home/<user>/.rpmmacros file that contains:
+The above command creates a /home/\<user\>/.rpmmacros file that contains:
 %_topdir %(echo $HOME)/rpmbuild
 
-The purpose of this line is to set the %_topdir value so that it will be /home/<user>/rpmbuild.
+The purpose of this line is to set the %_topdir value so that it will be /home/\<user\>/rpmbuild.
 
 
 You should now be ready to begin making your RPMs.
@@ -43,7 +43,7 @@ $ vi ~/rpmbuild/SPECS/test-rpm-1.0-0.spec
 ```
 
 The naming conventions for the .spec file are:
-<name-of-rpm>-<version>-<release>.spec
+\<name-of-rpm\>-\<version\>-\<release\>.spec
 
 
 Insert the following text within the file:
@@ -100,13 +100,13 @@ The doc tag indicates that it is a document file and will automatically place th
 The name and version tags act as macros to represent the values placed in the informational section of the RPM .spec file.
 
 
-Create a README file in /home/<user>/rpmbuild/BUILD/test-rpm-1.0:
+Create a README file in /home/\<user\>/rpmbuild/BUILD/test-rpm-1.0:
 ```
 $ mkdir ~/rpmbuild/BUILD/test-rpm-1.0
 $ vi ~/rpmbuild/BUILD/test-rpm-1.0/README
 ```
 
-The directory containing the README file must be in the format of <RPM-name>-<version>.
+The directory containing the README file must be in the format of \<RPM-name\>-\<version\>.
 
 
 Insert the following text within the file:
@@ -122,12 +122,12 @@ $ sudo rpm -e test-rpm
 This file will end up in /usr/share/test-rpm/README after the RPM is installed, but it must be placed in the BUILD directory so it is added during the build process.
 
 
-Create a folder to represent the root directory of the RPM inside of /home/<user>/rpmbuild/BUILDROOT:
+Create a folder to represent the root directory of the RPM inside of /home/\<user\>/rpmbuild/BUILDROOT:
 ```
 $ mkdir ~/rpmbuild/BUILDROOT/test-rpm-1.0-0.x86_64
 ```
 
-This directory must be named using the format of <RPM-name>-<version>-<release>.<architecture>.
+This directory must be named using the format of \<RPM-name\>-\<version\>-\<release\>.\<architecture\>.
 
 
 Create the folders that will be used during the installation of the RPM within this directory:
@@ -135,7 +135,7 @@ Create the folders that will be used during the installation of the RPM within t
 $ mkdir -p ~/rpmbuild/BUILDROOT/test-rpm-1.0-0.x86_64/usr/share/test-rpm
 ```
 
-The BUILDROOT/test-rpm-1.0-0.x86-64 directory represents the root directory on the machine that the RPM will be installed on. So any folders or files in this directory should match what you want when the RPM is installed. For example, if you want a file to go into the /etc/nginx directory you should make a directory at /home/<user>/rpmbuild/BUILDROOT/test-rpm-1.0-0.x86_64/etc/nginx. 
+The BUILDROOT/test-rpm-1.0-0.x86-64 directory represents the root directory on the machine that the RPM will be installed on. So any folders or files in this directory should match what you want when the RPM is installed. For example, if you want a file to go into the /etc/nginx directory you should make a directory at /home/\<user\>/rpmbuild/BUILDROOT/test-rpm-1.0-0.x86_64/etc/nginx. 
 
 Create the text file going into the /usr/share/test-rpm directory:
 ```
@@ -149,7 +149,7 @@ This is just a test RPM
 Please review the /usr/share/docs/test-rpm/README file for more information.
 
 
-If we were to run the tree command on the /home/<user>/rpmbuild directory at this point we would have the following output:
+If we were to run the tree command on the /home/\<user\>/rpmbuild directory at this point we would have the following output:
 
 ```
 /home/<user>/rpmbuild/
@@ -177,7 +177,7 @@ $ cd ~/rpmbuild/SPECS
 $ rpmbuild -bb test-rpm-1.0-0.spec
 ```
 
-The .rpm file will now be built and placed within the /home/<user>/rpmbuild/RPMS/x86_64 directory.
+The .rpm file will now be built and placed within the /home/\<user\>/rpmbuild/RPMS/x86_64 directory.
 
 
 
