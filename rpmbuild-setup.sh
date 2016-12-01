@@ -32,6 +32,7 @@ SUMMARY="Tests the creation of RPMs"
 LICENSE="NONE"
 VENDOR="No One"
 GROUP="Application/Text"
+DESCRIPTION="This is a test RPM package"
 
 # file must be named '<name-of-rpm>-<version>-<release>.spec'
 SPEC_FILE="${TOPDIR}/SPECS/${PROJECT_NAME}-${VERSION}-${RELEASE}.spec"
@@ -173,7 +174,7 @@ Vendor:     ${VENDOR}
 Group:      ${GROUP}
 
 %description
-This is a test RPM package
+${DESCRIPTION}
 
 %clean
 echo "Not cleaning up because more building is going to happen."
