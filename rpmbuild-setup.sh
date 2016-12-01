@@ -262,5 +262,5 @@ fi
 
 # prompt the user to build the test RPM if they desire
 echo "[COMPLETE] $1 ran successfully!"
-echo "[HELP if you would like to build the test RPM created by this script:"
+echo "[HELP] if you would like to build the test RPM created by this script:"
 echo "$ rpmbuild -bb ${SPEC_FILE}"
