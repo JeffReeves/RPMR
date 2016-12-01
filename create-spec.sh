@@ -137,10 +137,10 @@ CLEAN_FILE="${HOME}/clean-${RPMBUILD_DIR}.sh"
 
 cat >${SPEC_FILE} <<EOL
 Name:       ${PROJECT_NAME}
+Version:    ${VERSION}
 Release:    ${RELEASE}
 Summary:    ${SUMMARY}
 License:    ${LICENSE}
-Version:    ${VERSION}
 Vendor:     ${VENDOR}
 Group:      ${GROUP}
 
@@ -208,11 +208,11 @@ cp -a ${PROJECT_DIR}/* ${BUILDROOT_DIR}
 if [ $? -eq 0 ]; then
 	echo "[SUCCESS] Project files:"
 	echo "${PROJECT_FILES}"
-	echo "copied to ${TOPDIR}/BUILDROOT/${PROJECT_NAME}"
+	echo "copied to ${BUILDROOT_DIR}"
 else
 	echo "[ERROR] Project files:"
 	echo "${PROJECT_FILES}"
-	echo "could not be copied to ${TOPDIR}/BUILDROOT/${PROJECT_NAME}"
+	echo "could not be copied to ${BUILDROOT_DIR}"
 	return 4
 fi
 
