@@ -310,8 +310,9 @@ fi
 #
 
 echo "[COMPLETE] $1 ran successfully!"
+echo ""
 echo "[HELP] To build the RPM from the generated spec file:"
 echo "$ rpmbuild -bb ${SPEC_FILE}"
-echo "\r\n"
+echo ""
 echo "[HELP] To clean up the project files and directories afterwards:"
 echo "$ . clean-rpmbuild.sh"
