@@ -231,6 +231,7 @@ fi
 
 # move the /usr/share/doc files into the documentation directory in BUILDROOT
 DOCS=$(find "${BUILDROOT_DIR}${DOC_DIR}" -maxdepth 1 -type f) 
+DOCS=$(echo "${DOCS}" | sed -e "s:${BUILDROOT_DIR}::g")
 if [ -n "${DOCS}" ]; then
 	find "${BUILDROOT_DIR}${DOC_DIR}" -maxdepth 1 -type f -exec mv {} ${BUILDROOT_DOC_DIR} \;
 	if [ $? -eq 0 ]; then
@@ -309,7 +310,7 @@ fi
 # [STEP 6]: Prompt the user to build the RPM if they desire
 #
 
-echo "[COMPLETE] $1 ran successfully!"
+echo "[COMPLETE] create-spec.sh ran successfully!"
 echo ""
 echo "[HELP] To build the RPM from the generated spec file:"
 echo "$ rpmbuild -bb ${SPEC_FILE}"
