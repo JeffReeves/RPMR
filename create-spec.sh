@@ -50,9 +50,10 @@ PROJECT_DIR="${PROJECT_HOME}/${PROJECT_NAME}"
 PROJECT_FILES=$(find ${PROJECT_DIR} -type f -follow -print | sed -e "s:${PROJECT_DIR}::g")
 
 # documentation files
-DOC_PREFIX='%attr(0644,root,root) %doc %name-%version/'
-DOC_FILES=$(echo "${PROJECT_FILES}" | grep '/usr/doc')
-DOC_FILES=$(echo "${DOC_FILES}" | sed -e "s:/usr/doc/:${DOC_PREFIX}:g")
+DOC_DIR="/usr/share/doc"
+DOC_PREFIX='%attr(0644,root,root) %doc %name-%version.%release'
+DOC_FILES=$(echo "${PROJECT_FILES}" | grep "${DOC_DIR}")
+DOC_FILES=$(echo "${DOC_FILES}" | sed -e "s:${DOC_DIR}:${DOC_PREFIX}:g")
 
 # BUILDROOT files
 BUILDROOT_FILES=$(echo "${PROJECT_FILES}" | grep -v '/usr/doc')
@@ -122,6 +123,9 @@ BUILD_DIR="${TOPDIR}/BUILD/${PROJECT_NAME}-${VERSION}"
 
 # BUILDROOT directory must be named 'BUILDROOT/<rpm-name>-<version>-<release>.<architecture>'
 BUILDROOT_DIR="${TOPDIR}/BUILDROOT/${PROJECT_NAME}-${VERSION}-${RELEASE}.${ARCHITECTURE}"
+
+# documentation files directory within BUILDROOT
+BUILDROOT_DOC_DIR="${BUILDROOT_DIR}${DOC_DIR}/${PROJECT_NAME}-${VERSION}.${RELEASE}"
 
 # clean file for removing SPEC file and BUILD / BUILDROOT project directories
 CLEAN_FILE="${HOME}/clean-${RPMBUILD_DIR}.sh"
@@ -216,6 +220,30 @@ else
 	return 4
 fi
 
+# create a /usr/share/doc/<%name-%version.%release> directory for documentation
+mkdir -p ${BUILDROOT_DOC_DIR}
+if [ $? -eq 0 ]; then
+	echo "[SUCCESS] ${BUILDROOT_DOC_DIR} created successfully"
+else
+	echo "[ERROR] ${BUILDROOT_DOC_DIR} could not be created"
+	return 4
+fi
+
+# move the /usr/share/doc files into the documentation directory in BUILDROOT
+DOCS=$(find "${BUILDROOT_DIR}${DOC_DIR}" -maxdepth 1 -type f) 
+if [ -n "${DOCS}" ]; then
+	find "${BUILDROOT_DIR}${DOC_DIR}" -maxdepth 1 -type f -exec mv {} ${BUILDROOT_DOC_DIR} \;
+	if [ $? -eq 0 ]; then
+		echo "[SUCCESS] moved the following documentation files:"
+		echo "${DOCS}" 
+		echo "to ${BUILDROOT_DOC_DIR} successfully"
+	else
+		echo "[ERROR] Unable to move the following documentation files:"
+		echo "${DOCS}" 
+		echo "to ${BUILDROOT_DOC_DIR}"
+		return 4
+	fi
+fi
 
 # 
 # [STEP 5]: Create a cleanup script to remove everything but the .rpm file
@@ -233,7 +261,7 @@ rm -rf ${BUILD_DIR}
 if [ $? -eq 0 ]; then
 	echo "[SUCCESS] ${BUILD_DIR} deleted successfully"
 else
-	echo "[ERROR] ${BUILD_DIR} could not be created"
+	echo "[ERROR] ${BUILD_DIR} could not be deleted"
 fi
 
 # remove BUILDROOT project directory
@@ -241,7 +269,7 @@ rm -rf ${BUILDROOT_DIR}
 if [ $? -eq 0 ]; then
 	echo "[SUCCESS] ${BUILDROOT_DIR} deleted successfully"
 else
-	echo "[ERROR] ${BUILDROOT_DIR} could not be created"
+	echo "[ERROR] ${BUILDROOT_DIR} could not be deleted"
 fi
 
 # remove SPEC file
@@ -249,7 +277,7 @@ rm -rf ${SPEC_FILE}
 if [ $? -eq 0 ]; then
 	echo "[SUCCESS] ${SPEC_FILE} deleted successfully"
 else
-	echo "[ERROR] ${SPEC_FILE} could not be created"
+	echo "[ERROR] ${SPEC_FILE} could not be deleted"
 fi
 
 # remove itself
@@ -257,7 +285,7 @@ rm -rf ${CLEAN_FILE}
 if [ $? -eq 0 ]; then
 	echo "[SUCCESS] ${CLEAN_FILE} deleted successfully"
 else
-	echo "[ERROR] ${CLEAN_FILE} could not be created"
+	echo "[ERROR] ${CLEAN_FILE} could not be deleted"
 fi
 EOL
 if [ $? -eq 0 ]; then
