@@ -2,6 +2,7 @@
 
 # AUTHOR:
 # Jeffrey Reeves
+# https://github.com/JeffReeves
 #
 # PURPOSE:
 # 1. Generate a .spec file for RPM building using a template
