@@ -51,12 +51,12 @@ PROJECT_FILES=$(find ${PROJECT_DIR} -type f -follow -print | sed -e "s:${PROJECT
 
 # documentation files
 DOC_DIR="/usr/share/doc"
-DOC_PREFIX='%attr(0644,root,root) %doc %name-%version.%release'
+DOC_PREFIX='%attr(0644,root,root) %doc %name-%version'
 DOC_FILES=$(echo "${PROJECT_FILES}" | grep "${DOC_DIR}")
 DOC_FILES=$(echo "${DOC_FILES}" | sed -e "s:${DOC_DIR}:${DOC_PREFIX}:g")
 
 # BUILDROOT files
-BUILDROOT_FILES=$(echo "${PROJECT_FILES}" | grep -v '/usr/doc')
+BUILDROOT_FILES=$(echo "${PROJECT_FILES}" | grep -v "${DOC_DIR}")
 
 # default file attributes
 DEFATTR='%defattr(0755,root,root)'
@@ -123,9 +123,6 @@ BUILD_DIR="${TOPDIR}/BUILD/${PROJECT_NAME}-${VERSION}"
 
 # BUILDROOT directory must be named 'BUILDROOT/<rpm-name>-<version>-<release>.<architecture>'
 BUILDROOT_DIR="${TOPDIR}/BUILDROOT/${PROJECT_NAME}-${VERSION}-${RELEASE}.${ARCHITECTURE}"
-
-# documentation files directory within BUILDROOT
-BUILDROOT_DOC_DIR="${BUILDROOT_DIR}${DOC_DIR}/${PROJECT_NAME}-${VERSION}.${RELEASE}"
 
 # clean file for removing SPEC file and BUILD / BUILDROOT project directories
 CLEAN_FILE="${HOME}/clean-${RPMBUILD_DIR}.sh"
@@ -220,28 +217,28 @@ else
 	return 4
 fi
 
-# create a /usr/share/doc/<%name-%version.%release> directory for documentation
-mkdir -p ${BUILDROOT_DOC_DIR}
-if [ $? -eq 0 ]; then
-	echo "[SUCCESS] ${BUILDROOT_DOC_DIR} created successfully"
-else
-	echo "[ERROR] ${BUILDROOT_DOC_DIR} could not be created"
-	return 4
-fi
-
-# move the /usr/share/doc files into the documentation directory in BUILDROOT
+# move the /usr/share/doc files into the BUILD directory, if they exist
 DOCS=$(find "${BUILDROOT_DIR}${DOC_DIR}" -maxdepth 1 -type f) 
-DOCS=$(echo "${DOCS}" | sed -e "s:${BUILDROOT_DIR}::g")
+DOC_NAMES=$(echo "${DOCS}" | sed -e "s:${BUILDROOT_DIR}::g")
 if [ -n "${DOCS}" ]; then
-	find "${BUILDROOT_DIR}${DOC_DIR}" -maxdepth 1 -type f -exec mv {} ${BUILDROOT_DOC_DIR} \;
+	find "${BUILDROOT_DIR}${DOC_DIR}" -maxdepth 1 -type f -exec mv {} ${BUILD_DIR} \;
 	if [ $? -eq 0 ]; then
 		echo "[SUCCESS] moved the following documentation files:"
-		echo "${DOCS}" 
-		echo "to ${BUILDROOT_DOC_DIR} successfully"
+		echo "${DOC_NAMES}" 
+		echo "to ${BUILD_DIR} successfully"
 	else
 		echo "[ERROR] Unable to move the following documentation files:"
-		echo "${DOCS}" 
-		echo "to ${BUILDROOT_DOC_DIR}"
+		echo "${DOC_NAMES}" 
+		echo "to ${BUILD_DIR}"
+		return 4
+	fi
+	
+	# delete redundant BUILDROOT /usr/share/doc directory
+	rm -rf ${BUILDROOT_DIR}${DOC_DIR}
+	if [ $? -eq 0 ]; then
+		echo "[SUCCESS] deleted the redundant ${BUILDROOT_DIR}${DOC_DIR} directory"
+	else
+		echo "[ERROR] Unable to deleted the redundant ${BUILDROOT_DIR}${DOC_DIR} directory"
 		return 4
 	fi
 fi
