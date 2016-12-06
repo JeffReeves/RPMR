@@ -1,11 +1,13 @@
 #!/bin/bash
 
 # AUTHOR: Jeffrey Reeves
+# https://github.com/JeffReeves
+#
 # PURPOSE:
 # 1. Install the rpmbuild command for building RPMs
 # 2. Create six necessary directories for the rpmbuild environment
 # 3. Create a basic .rpmmacros file to specify the %_topdir value
-# 4. Create a template .spec file and related build directories
+# 4. Create a default project directory containing a project template
 
 
 #
@@ -23,29 +25,41 @@ RPMBUILD_DIR="rpmbuild"
 # top directory to build RPMs in
 TOPDIR="${HOME}/${RPMBUILD_DIR}"
 
-# RPM project details 
-PROJECT_NAME="test-rpm"
-VERSION="1.0"
-RELEASE="0"
-ARCHITECTURE="x86_64"
-SUMMARY="Tests the creation of RPMs"
-LICENSE="NONE"
-VENDOR="No One"
-GROUP="Application/Text"
-DESCRIPTION="This is a test RPM package"
-
-# file must be named '<name-of-rpm>-<version>-<release>.spec'
-SPEC_FILE="${TOPDIR}/SPECS/${PROJECT_NAME}-${VERSION}-${RELEASE}.spec"
-
-# BUILD directory must be named 'BUILD/<rpm-name>-<version>'
-BUILD_DIR="${TOPDIR}/BUILD/${PROJECT_NAME}-${VERSION}"
-
-# BUILDROOT directory must be named 'BUILDROOT/<rpm-name>-<version>-<release>.<architecture>'
-BUILDROOT_DIR="${TOPDIR}/BUILDROOT/${PROJECT_NAME}-${VERSION}-${RELEASE}.${ARCHITECTURE}"
 
 #
 # [FUNCTIONS]
 #
+
+make_directory() {
+# PURPOSE:
+# makes a directory if it does not exist
+
+# PARAMS:
+# $1  = directory to be made
+
+	# ensure a parameter was passed
+	if [ -z "$1" ]; then
+		echo "[ERROR] no parameter passed to make_directory()"
+		echo "[HELP] pass directory path (ex. /home/<user>/projectdir)"
+		return 1
+	fi
+	
+	# get the directory
+	local DIR="$1"
+	shift
+	
+	# check that the directory exists
+	if [ ! -d "${DIR}" ]; then
+		echo "[ERROR] ${DIR} does not exist"
+		mkdir -p "${DIR}"
+		if [ $? -eq 0 ]; then
+			echo "[SUCCESS] ${DIR} created successfully"
+		else
+			echo "[ERROR] ${DIR} could not be created"
+			return 2
+		fi
+	fi
+}
 
 check_directories() {
 # PURPOSE:
@@ -75,7 +89,7 @@ check_directories() {
 			echo "[SUCCESS] ${ROOTDIR} created successfully"
 		else
 			echo "[ERROR] ${ROOTDIR} could not be created"
-			return 3
+			return 2
 		fi
 	fi
 	
@@ -160,107 +174,38 @@ else
 fi
 
 #
-# [STEP 4]: Create a template .spec file and all related directories
+# [STEP 4]: Create a default project directory containing a project template
 #
 
-# write the test-rpm spec file
-cat >${SPEC_FILE} <<EOL
-Name:       ${PROJECT_NAME}
-Release:    ${RELEASE}
-Summary:    ${SUMMARY}
-License:    ${LICENSE}
-Version:    ${VERSION}
-Vendor:     ${VENDOR}
-Group:      ${GROUP}
+# location of main project directory 
+PROJECT_DIR="${HOME}/projectdir"
 
-%description
-${DESCRIPTION}
+# supporting subdirectories 
+BIN_DIR="${PROJECT_DIR}/project-template/usr/local/bin"
+DOC_DIR="${PROJECT_DIR}/project-template/usr/share/doc"
+CONF_DIR="${PROJECT_DIR}/project-template/usr/etc"
 
-%clean
-echo "Not cleaning up because more building is going to happen."
+# create the project directories
+make_directory "${PROJECT_DIR}"
+make_directory "${BIN_DIR}"
+make_directory "${DOC_DIR}"
+make_directory "${CONF_DIR}"
 
-%pre
-echo "Preparing for installation..."
+echo "[SUCCESS] Created default project directory and supporting subdirectories"
 
-%post
-echo "Installation successful. Review /usr/share/doc/${PROJECT_NAME} for help."
+#
+# [FINISH] Prompt user with a getting started guide
+#
 
-%preun
-echo "Preparing to uninstall..."
-
-%postun
-echo "Uninstall completed successfully."
-
-%files
-%defattr(0755,root,root)
-/usr/share/${PROJECT_NAME}/test.txt
-%attr(0644,root,root) %doc %name-%version/README
-EOL
-if [ $? -eq 0 ]; then
-	echo "[SUCCESS] ${PROJECT_NAME}-${VERSION}-${RELEASE}.spec file created at ${TOPDIR}/SPECS"
-else
-	echo "[ERROR] STEP 4 failed - .spec file could not be created"
-	return 4
-fi
-
-# create the project directory within the BUILD directory
-mkdir -p "${BUILD_DIR}"
-if [ $? -eq 0 ]; then
-	echo "[SUCCESS] ${PROJECT_NAME}-${VERSION} directory created at ${TOPDIR}/BUILD"
-else
-	echo "[ERROR] STEP 4 failed - project directory could not be created at ${TOPDIR}/BUILD"
-	return 4
-fi
-
-# add a README file within the project's BUILD directory
-cat >${BUILD_DIR}/README <<EOL
-This is the readme for test-rpm.
-
-This RPM only creates a txt file in: /usr/share/${PROJECT_NAME}
-
-To uninstall this package run:
-$ sudo rpm -e ${PROJECT_NAME}
-EOL
-if [ $? -eq 0 ]; then
-	echo "[SUCCESS] README file created at ${BUILD_DIR}"
-else
-	echo "[ERROR] STEP 4 failed - README file could not be created at BUILDROOT/usr/share/${PROJECT_NAME}"
-	return 4
-fi
-
-# create the project's BUILDROOT directory to represent the 
-#    root directory of the installed machine
-mkdir -p "${BUILDROOT_DIR}"
-if [ $? -eq 0 ]; then
-	echo "[SUCCESS] ${PROJECT_NAME}-${VERSION}-${RELEASE}.${ARCHITECTURE} directory created at ${TOPDIR}/BUILDROOT"
-else
-	echo "[ERROR] STEP 4 failed - project directory could not be created at ${TOPDIR}/BUILDROOT"
-	return 4
-fi
-
-# create a /usr/share/<project-name> directory within the BUILDROOT
-mkdir -p "${BUILDROOT_DIR}/usr/share/${PROJECT_NAME}"
-if [ $? -eq 0 ]; then
-	echo "[SUCCESS] /usr/share/${PROJECT_NAME} directory created at ${BUILDROOT_DIR}"
-else
-	echo "[ERROR] STEP 4 failed - /usr/share/${PROJECT_NAME} could not be created in BUILDROOT"
-	return 4
-fi
-
-# create a test.txt file within the last directory
-cat >${BUILDROOT_DIR}/usr/share/${PROJECT_NAME}/test.txt <<EOL
-This is just a test RPM
-
-Please review the /usr/share/docs/${PROJECT_NAME}/README file for more information.
-EOL
-if [ $? -eq 0 ]; then
-	echo "[SUCCESS]  test.txt file created at ${BUILDROOT_DIR}/usr/share/${PROJECT_NAME}"
-else
-	echo "[ERROR] STEP 4 failed - test.txt file could not be created at ${BUILDROOT_DIR}/usr/share/${PROJECT_NAME}"
-	return 4
-fi
 
 # prompt the user to build the test RPM if they desire
-echo "[COMPLETE] $1 ran successfully!"
-echo "[HELP] if you would like to build the test RPM created by this script:"
-echo "$ rpmbuild -bb ${SPEC_FILE}"
+echo "[COMPLETE] rpmbuild-setup ran successfully!"
+echo ""
+echo "[HELP] GETTING STARTED WITH RPM BUILDING USING RPMR:"
+echo "1. All RPM projects must be within a subdirectory of ${PROJECT_DIR}."
+echo "2. The name of the subdirectory should be the name of your project."
+echo "3. The project-template directory is an example of how to organize your project."
+echo "4. Edit the /usr/local/bin/create-spec.sh file to meet the needs of your project."
+echo "5. Run the create-spec script to create the .spec file for your project's RPM."
+echo "6. The create-spec script will output the rpmbuild command needed to create the RPM."
+echo "7. Check the rpmbuild/RPMS directory for your build RPM."
