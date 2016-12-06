@@ -28,15 +28,15 @@
 # [PROJECT DETAILS]
 #
 
-PROJECT_NAME="test-rpm"
+PROJECT_NAME="rpmr"
 VERSION="1.0"
 RELEASE="0"
 ARCHITECTURE="x86_64"
-SUMMARY="Tests the creation of RPMs"
-DESCRIPTION="This is a test RPM package"
-LICENSE="NONE"
-VENDOR="No One"
-GROUP="Application/Text"
+SUMMARY="Reduces RPM building to a simple config file"
+DESCRIPTION="Reduces RPM building to a simple config file"
+LICENSE="MIT"
+VENDOR="Alchemist.Digital"
+GROUP="Development/Tools"
 
 # source if building from .tar
 SOURCE=''
@@ -56,8 +56,15 @@ DOC_PREFIX='%attr(0644,root,root) %doc %name-%version'
 DOC_FILES=$(echo "${PROJECT_FILES}" | grep "${DOC_DIR}")
 DOC_FILES=$(echo "${DOC_FILES}" | sed -e "s:${DOC_DIR}:${DOC_PREFIX}:g")
 
+# configuration files
+CONFIG_DIR="/usr/etc"
+CONFIG_PREFIX='%config(noreplace) /usr/etc/%name/'
+CONFIG_FILES=$(echo "${PROJECT_FILES}" | grep "${CONFIG_DIR}")
+CONFIG_FILES=$(echo "${CONFIG_FILES}" | sed -e "s:${CONFIG_DIR}:${CONFIG_PREFIX}:g")
+
 # BUILDROOT files
 BUILDROOT_FILES=$(echo "${PROJECT_FILES}" | grep -v "${DOC_DIR}")
+BUILDROOT_FILES=$(echo "${BUILDROOT_FILES}" | grep -v "${CONFIG_DIR}")
 
 # default file attributes
 DEFATTR='%defattr(0755,root,root)'
@@ -66,6 +73,7 @@ DEFATTR='%defattr(0755,root,root)'
 FILES=$(cat <<-END
 ${DEFATTR}
 ${BUILDROOT_FILES}
+${CONFIG_FILES}
 ${DOC_FILES}
 END
 )
@@ -124,6 +132,9 @@ BUILD_DIR="${TOPDIR}/BUILD/${PROJECT_NAME}-${VERSION}"
 
 # BUILDROOT directory must be named 'BUILDROOT/<rpm-name>-<version>-<release>.<architecture>'
 BUILDROOT_DIR="${TOPDIR}/BUILDROOT/${PROJECT_NAME}-${VERSION}-${RELEASE}.${ARCHITECTURE}"
+
+# config file project directory must be named $BUILDROOT/usr/etc/<rpm-name>
+BUILDROOT_CONFIG_DIR="${BUILDROOT_DIR}${CONFIG_DIR}/${PROJECT_NAME}"
 
 # clean file for removing SPEC file and BUILD / BUILDROOT project directories
 CLEAN_FILE="${HOME}/clean-${RPMBUILD_DIR}.sh"
@@ -243,6 +254,27 @@ if [ -n "${DOCS}" ]; then
 		return 4
 	fi
 fi
+
+# move the /usr/etc config files into the BUILDROOT/usr/etc/<project_name> directory, if they exist
+CONFIGS=$(find "${BUILDROOT_DIR}${CONFIG_DIR}" -maxdepth 1 -type f) 
+CONFIG_NAMES=$(echo "${CONFIGS}" | sed -e "s:${BUILDROOT_DIR}::g")
+if [ -n "${CONFIGS}" ]; then
+	# make project directory in BUILDROOT/etc/usr
+	mkdir -p "${BUILDROOT_CONFIG_DIR}"
+	
+	find "${BUILDROOT_DIR}${CONFIG_DIR}" -maxdepth 1 -type f -exec mv {} ${BUILDROOT_CONFIG_DIR} \;
+	if [ $? -eq 0 ]; then
+		echo "[SUCCESS] moved the following configuration files:"
+		echo "${CONFIG_NAMES}" 
+		echo "to ${BUILDROOT_CONFIG_DIR} successfully"
+	else
+		echo "[ERROR] Unable to move the following configuration files:"
+		echo "${CONFIG_NAMES}" 
+		echo "to ${BUILDROOT_CONFIG_DIR}"
+		return 4
+	fi
+fi
+
 
 # 
 # [STEP 5]: Create a cleanup script to remove everything but the .rpm file
