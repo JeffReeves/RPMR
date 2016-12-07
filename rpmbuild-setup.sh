@@ -221,7 +221,7 @@ fi
 #
 
 # set the %_topdir value to the directory made in STEP 2
-echo '%_topdir %(echo $HOME)/'${RPMBUILD_DIR} > ${HOME}/.rpmmacros
+echo '%_topdir ' ${TOPDIR} > ${HOME}/.rpmmacros
 if [ $? -eq 0 ]; then
 	echo "[SUCCESS] .rpmmacros file created at ${HOME}"
 else
@@ -258,7 +258,6 @@ echo "[HELP] GETTING STARTED WITH RPM BUILDING USING RPMR:"
 echo "1. All RPM projects must be within a subdirectory of ${PROJECT_HOME}."
 echo "2. The name of the subdirectory should be the name of your project."
 echo "3. The project-template directory is an example of how to organize your project."
-echo "4. Edit the /usr/local/bin/create-spec.sh file to meet the needs of your project."
-echo "5. Run the create-spec script to create the .spec file for your project's RPM."
-echo "6. The create-spec script will output the rpmbuild command needed to create the RPM."
-echo "7. Check the rpmbuild/RPMS directory for your build RPM."
+echo "4. Run the create-spec script to create a project.conf and a .spec file for your project's RPM."
+echo "5. The create-spec script will output the rpmbuild command needed to create the RPM."
+echo "6. Check the rpmbuild/RPMS directory for your build RPM."
