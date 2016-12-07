@@ -556,6 +556,17 @@ if [ -n "${CONFIGS}" ]; then
 fi
 
 
+# delete the project.conf file from the BUILDROOT
+if [ -f "${BUILDROOT_DIR}/project.conf" ]; then
+	rm -rf "${BUILDROOT_DIR}/project.conf"
+	if [ $? -eq 0 ]; then
+		echo "[SUCCESS] Deleted the redundant ${BUILDROOT_DIR}/project.conf file"
+	else
+		echo "[ERROR] Unable to delete the redundant ${BUILDROOT_DIR}/project.conf file"
+		return 4
+	fi
+fi
+
 # 
 # [STEP 5]: Create a cleanup script to remove everything but the .rpm file
 #
