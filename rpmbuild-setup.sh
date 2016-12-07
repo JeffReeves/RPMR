@@ -11,24 +11,6 @@
 
 
 #
-# [GLOBAL VARIABLES]
-#
-
-# user's home directory
-if [ -z "$HOME" ]; then
-	HOME=~/
-fi
-
-# directory name where RPMs will be built
-RPMBUILD_DIR="rpmbuild"
-
-# top directory to build RPMs in
-TOPDIR="${HOME}/${RPMBUILD_DIR}"
-
-# location of main project directory 
-PROJECT_HOME="${HOME}/projectdir"
-
-#
 # [FUNCTIONS]
 #
 
@@ -130,6 +112,75 @@ check_directories() {
 		fi
 	done
 }
+
+
+#
+# [GLOBAL VARIABLES]
+#
+
+# user's home directory
+if [ -z "$HOME" ]; then
+	export HOME=~/
+fi
+
+# main conf file 
+MAIN_CONF="${HOME}/rpmr/rpmr.conf"
+
+# import main conf file, if it exists
+if [ -s "${MAIN_CONF}" ]; then
+	source ${MAIN_CONF}
+
+	echo '[DEBUG] TOPDIR:'
+	echo "${TOPDIR}"
+
+	echo '[DEBUG] RPMBUILD_DIR:'
+	echo "${RPMBUILD_DIR}"
+	
+	echo '[DEBUG] PROJECT_HOME:'
+	echo "${PROJECT_HOME}"
+else
+	echo "[DEBUG] NO CONF FILE FOUND"
+
+	# directory where RPMs will be built
+	echo "[QUESTION] RPM Build Directory" 
+	echo "Please enter the full path to a directory you wish to build RPMs within:"
+	echo "(Default: ${HOME}/rpmr/rpmbuild)"
+	read TOPDIR
+
+	if [ -z ${TOPDIR} ]; then
+		echo "[ERROR] No path provided for RPM Build Directory."
+		echoh "Defaulting to ${HOME}/rpmr/rpmbuild"
+		TOPDIR="${HOME}/rpmr/rpmbuild"
+	fi
+	
+	# strip out prefix to get rpmbuild directory name
+	RPMBUILD_DIR=$(echo "${TOPDIR}" | sed 's/.*\///g')
+
+	# main directory where projects will be stored
+	echo "[QUESTION] Project Directory" 
+	echo "Please enter the full path to a directory you wish to store your projects in:"
+	echo "(Default: ${HOME}/rpmr/projectdir)"
+	read PROJECT_HOME
+
+	if [ -z ${PROJECT_HOME} ]; then
+		echo "[ERROR] No path provided for Project Directory."
+		echoh "Defaulting to ${HOME}/rpmr/projectdir"
+		PROJECT_HOME="${HOME}/rpmr/projectdir"
+	fi
+
+	cat >${MAIN_CONF} <<EOL
+RPMBUILD_DIR="${RPMBUILD_DIR}"	
+TOPDIR="${TOPDIR}"	
+PROJECT_HOME="${PROJECT_HOME}"
+EOL
+	if [ $? -eq 0 ]; then
+		echo "[SUCCESS] Created ${MAIN_CONF}"
+	else
+		echo "[ERROR] Failed to create ${MAIN_CONF}"
+		return 1
+	fi
+
+fi
 
 
 #
