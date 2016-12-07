@@ -180,7 +180,7 @@ if [ -s "${PROJECT_CONF}" ]; then
 	echo "VENDOR = ${VENDOR}"
 	echo "GROUP = ${GROUP}"
 	
-	echo "CLEAN = ${CLEAN"
+	echo "CLEAN = ${CLEAN}"
 	echo "PRE = ${PRE}"
 	echo "POST = ${POST}"
 	echo "PREUN = ${PREUN}"
