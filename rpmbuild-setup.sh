@@ -34,7 +34,7 @@ make_directory() {
 	
 	# check that the directory exists
 	if [ ! -d "${DIR}" ]; then
-		echo "[ERROR] ${DIR} does not exist"
+		echo "[NOTICE] ${DIR} does not exist"
 		mkdir -p "${DIR}"
 		if [ $? -eq 0 ]; then
 			echo "[SUCCESS] ${DIR} created successfully"
@@ -67,7 +67,7 @@ check_directories() {
 	
 	# check that the rootdir exists
 	if [ ! -d "${ROOTDIR}" ]; then
-		echo "[ERROR] ${ROOTDIR} does not exist"
+		echo "[NOTICE] ${ROOTDIR} does not exist"
 		mkdir -p "${ROOTDIR}"
 		if [ $? -eq 0 ]; then
 			echo "[SUCCESS] ${ROOTDIR} created successfully"
@@ -96,7 +96,7 @@ check_directories() {
 		
 		# check that they exist as directories
 		if [ ! -d "${ROOTDIR}/$i" ]; then
-			echo "[ERROR] directory $i does not exist in ${ROOTDIR}"
+			echo "[NOTICE] directory $i does not exist in ${ROOTDIR}"
 			
 			# make missing directory
 			mkdir -p "${ROOTDIR}/$i"
@@ -140,6 +140,9 @@ if [ -s "${MAIN_CONF}" ]; then
 	echo "${PROJECT_HOME}"
 else
 	echo "[DEBUG] NO CONF FILE FOUND"
+	
+	# make conf file directory
+	make_directory "${HOME}/rpmr"
 
 	# directory where RPMs will be built
 	echo "[QUESTION] RPM Build Directory" 
@@ -148,8 +151,8 @@ else
 	read TOPDIR
 
 	if [ -z ${TOPDIR} ]; then
-		echo "[ERROR] No path provided for RPM Build Directory."
-		echoh "Defaulting to ${HOME}/rpmr/rpmbuild"
+		echo "[NOTICE] No path provided for RPM Build Directory."
+		echo "Defaulting to ${HOME}/rpmr/rpmbuild"
 		TOPDIR="${HOME}/rpmr/rpmbuild"
 	fi
 	
@@ -163,7 +166,7 @@ else
 	read PROJECT_HOME
 
 	if [ -z ${PROJECT_HOME} ]; then
-		echo "[ERROR] No path provided for Project Directory."
+		echo "[NOTICE] No path provided for Project Directory."
 		echoh "Defaulting to ${HOME}/rpmr/projectdir"
 		PROJECT_HOME="${HOME}/rpmr/projectdir"
 	fi
