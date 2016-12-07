@@ -239,7 +239,6 @@ DOC_DIR="${PROJECT_HOME}/project-template/usr/share/doc"
 CONF_DIR="${PROJECT_HOME}/project-template/usr/etc"
 
 # create the project directories
-make_directory "${PROJECT_HOME}"
 make_directory "${BIN_DIR}"
 make_directory "${DOC_DIR}"
 make_directory "${CONF_DIR}"
