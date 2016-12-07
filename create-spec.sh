@@ -179,6 +179,12 @@ if [ -s "${PROJECT_CONF}" ]; then
 	echo "LICENSE = ${LICENSE}"
 	echo "VENDOR = ${VENDOR}"
 	echo "GROUP = ${GROUP}"
+	
+	echo "CLEAN = ${CLEAN"
+	echo "PRE = ${PRE}"
+	echo "POST = ${POST}"
+	echo "PREUN = ${PREUN}"
+	echo "POSTUN = ${POSTUN}"
 
 else
 	echo "[NOTICE] NO PROJECT CONF FILE FOUND"
@@ -298,6 +304,27 @@ DESCRIPTION="${DESCRIPTION}"
 LICENSE="${LICENSE}"	
 VENDOR="${VENDOR}"	
 GROUP="${GROUP}"
+
+CLEAN='
+echo "Not cleaning up because more building is going to happen."
+echo "Run the clean script in the project directory to remove rpmbuild files"
+'
+
+PRE='
+echo "Preparing for installation..."
+'
+
+POST='
+echo "Installation successful."
+'
+
+PREUN='
+echo "Preparing to uninstall..."
+'
+
+POSTUN='
+echo "Uninstall completed successfully."
+'
 EOL
 	if [ $? -eq 0 ]; then
 		echo "[SUCCESS] Created ${PROJECT_CONF}"
@@ -338,7 +365,7 @@ DOC_FILES=$(echo "${DOC_FILES}" | sed -e "s:${DOC_DIR}:${DOC_PREFIX}:g")
 
 # configuration files
 CONFIG_DIR="/usr/etc"
-CONFIG_PREFIX='%config(noreplace) /usr/etc/%name/'
+CONFIG_PREFIX='%config(noreplace) /usr/etc/%name'
 CONFIG_FILES=$(echo "${PROJECT_FILES}" | grep "${CONFIG_DIR}")
 CONFIG_FILES=$(echo "${CONFIG_FILES}" | sed -e "s:${CONFIG_DIR}:${CONFIG_PREFIX}:g")
 
@@ -355,42 +382,6 @@ ${DEFATTR}
 ${BUILDROOT_FILES}
 ${CONFIG_FILES}
 ${DOC_FILES}
-END
-)
-
-# occurs after building
-# Note: if left blank, default behavior is to rm -rf the project directories
-CLEAN=$(cat <<-END
-echo "Not cleaning up because more building is going to happen."
-
-END
-)
-
-# occurs during pre-installation
-PRE=$(cat <<-END
-echo "Preparing for installation..."
-
-END
-)
-
-# occurs after installation
-POST=$(cat <<-END
-echo "Installation successful."
-
-END
-) 
-
-# occurs during pre-uninstallation
-PREUN=$(cat <<-END
-echo "Preparing to uninstall..."
-
-END
-)
-
-# occurs after uninstallation
-POSTUN=$(cat <<-END
-echo "Uninstall completed successfully."
-
 END
 )
 
