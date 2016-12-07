@@ -25,6 +25,8 @@ RPMBUILD_DIR="rpmbuild"
 # top directory to build RPMs in
 TOPDIR="${HOME}/${RPMBUILD_DIR}"
 
+# location of main project directory 
+PROJECT_HOME="${HOME}/projectdir"
 
 #
 # [FUNCTIONS]
@@ -177,16 +179,13 @@ fi
 # [STEP 4]: Create a default project directory containing a project template
 #
 
-# location of main project directory 
-PROJECT_DIR="${HOME}/projectdir"
-
 # supporting subdirectories 
-BIN_DIR="${PROJECT_DIR}/project-template/usr/local/bin"
-DOC_DIR="${PROJECT_DIR}/project-template/usr/share/doc"
-CONF_DIR="${PROJECT_DIR}/project-template/usr/etc"
+BIN_DIR="${PROJECT_HOME}/project-template/usr/local/bin"
+DOC_DIR="${PROJECT_HOME}/project-template/usr/share/doc"
+CONF_DIR="${PROJECT_HOME}/project-template/usr/etc"
 
 # create the project directories
-make_directory "${PROJECT_DIR}"
+make_directory "${PROJECT_HOME}"
 make_directory "${BIN_DIR}"
 make_directory "${DOC_DIR}"
 make_directory "${CONF_DIR}"
@@ -202,7 +201,7 @@ echo "[SUCCESS] Created default project directory and supporting subdirectories"
 echo "[COMPLETE] rpmbuild-setup ran successfully!"
 echo ""
 echo "[HELP] GETTING STARTED WITH RPM BUILDING USING RPMR:"
-echo "1. All RPM projects must be within a subdirectory of ${PROJECT_DIR}."
+echo "1. All RPM projects must be within a subdirectory of ${PROJECT_HOME}."
 echo "2. The name of the subdirectory should be the name of your project."
 echo "3. The project-template directory is an example of how to organize your project."
 echo "4. Edit the /usr/local/bin/create-spec.sh file to meet the needs of your project."
