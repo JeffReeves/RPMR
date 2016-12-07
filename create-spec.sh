@@ -25,24 +25,304 @@
 #
 
 #
+# [FUNCTIONS]
+#
+
+make_directory() {
+# PURPOSE:
+# makes a directory if it does not exist
+
+# PARAMS:
+# $1  = directory to be made
+
+	# ensure a parameter was passed
+	if [ -z "$1" ]; then
+		echo "[ERROR] no parameter passed to make_directory()"
+		echo "[HELP] pass directory path (ex. /home/<user>/projectdir)"
+		return 1
+	fi
+	
+	# get the directory
+	local DIR="$1"
+	shift
+	
+	# check that the directory exists
+	if [ ! -d "${DIR}" ]; then
+		echo "[NOTICE] ${DIR} does not exist"
+		mkdir -p "${DIR}"
+		if [ $? -eq 0 ]; then
+			echo "[SUCCESS] ${DIR} created successfully"
+		else
+			echo "[ERROR] ${DIR} could not be created"
+			return 2
+		fi
+	fi
+}
+
+
+#
+# [GLOBAL VARIABLES] Read from Conf file, or create it if one does not exist
+#
+
+# user's home directory
+if [ -z "$HOME" ]; then
+	export HOME=~/
+fi
+
+# main conf file 
+MAIN_CONF="${HOME}/rpmr/rpmr.conf"
+
+# import main conf file, if it exists
+if [ -s "${MAIN_CONF}" ]; then
+	source ${MAIN_CONF}
+	
+	echo "[SUCCESS] CONF FILE FOUND AND READ"
+
+	echo '[DEBUG] TOPDIR:'
+	echo "${TOPDIR}"
+
+	echo '[DEBUG] RPMBUILD_DIR:'
+	echo "${RPMBUILD_DIR}"
+	
+	echo '[DEBUG] PROJECT_HOME:'
+	echo "${PROJECT_HOME}"
+else
+	echo "[DEBUG] NO CONF FILE FOUND"
+	
+	# make conf file directory
+	make_directory "${HOME}/rpmr"
+
+	# directory where RPMs will be built
+	echo "[QUESTION] RPM Build Directory" 
+	echo "Please enter the full path to a directory you wish to build RPMs within:"
+	echo "(Default: ${HOME}/rpmr/rpmbuild)"
+	read TOPDIR
+
+	if [ -z ${TOPDIR} ]; then
+		echo "[NOTICE] No path provided for RPM Build Directory."
+		echo "Defaulting to ${HOME}/rpmr/rpmbuild"
+		TOPDIR="${HOME}/rpmr/rpmbuild"
+	fi
+	
+	# strip out prefix to get rpmbuild directory name
+	RPMBUILD_DIR=$(echo "${TOPDIR}" | sed 's/.*\///g')
+
+	# main directory where projects will be stored
+	echo "[QUESTION] Project Directory" 
+	echo "Please enter the full path to a directory you wish to store your projects in:"
+	echo "(Default: ${HOME}/rpmr/projectdir)"
+	read PROJECT_HOME
+
+	if [ -z ${PROJECT_HOME} ]; then
+		echo "[NOTICE] No path provided for Project Directory."
+		echoh "Defaulting to ${HOME}/rpmr/projectdir"
+		PROJECT_HOME="${HOME}/rpmr/projectdir"
+	fi
+
+	cat >${MAIN_CONF} <<EOL
+RPMBUILD_DIR="${RPMBUILD_DIR}"	
+TOPDIR="${TOPDIR}"	
+PROJECT_HOME="${PROJECT_HOME}"
+EOL
+	if [ $? -eq 0 ]; then
+		echo "[SUCCESS] Created ${MAIN_CONF}"
+	else
+		echo "[ERROR] Failed to create ${MAIN_CONF}"
+		return 1
+	fi
+
+fi
+
+
+#
 # [PROJECT DETAILS]
 #
 
-PROJECT_NAME="rpmr"
-VERSION="1.0"
-RELEASE="0"
-ARCHITECTURE="x86_64"
-SUMMARY="Reduces RPM building to a simple config file"
-DESCRIPTION="Reduces RPM building to a simple config file"
-LICENSE="MIT"
-VENDOR="Alchemist.Digital"
-GROUP="Development/Tools"
+# get the directory the user was in when this script was executed 
+PWD=$(pwd)
+
+# ask for directory the project is in so we can cd to it
+echo "[QUESTION] PROJECT DIRECTORY"
+echo "Please enter the full path to the project directory:"
+echo "(Default: ${PWD})"
+read PROJECT_DIRECTORY
+
+if [ -z ${PROJECT_DIRECTORY} ]; then
+	echo "Defaulting to ${PWD}"
+	PROJECT_DIRECTORY="${PWD}"
+else
+	cd ${PROJECT_DIRECTORY}
+fi
+
+# get the current directory again (in case it changed)
+PWD=$(pwd)
+
+# strip out prefix to hopefully get the project's name
+POSSIBLE_PROJECT_NAME=$(echo "${PWD}" | sed 's/.*\///g')
+
+# project conf file
+PROJECT_CONF="${PROJECT_DIRECTORY}/project.conf"
+
+# import project conf file, if it exists
+if [ -s "${PROJECT_CONF}" ]; then
+	source ${PROJECT_CONF}
+	
+	echo "[SUCCESS] PROJECT CONF FILE FOUND AND READ"
+	
+	echo "[NOTICE] PROJECT DETAILS:"
+	echo "PROJECT_NAME = ${PROJECT_NAME}"
+	echo "VERSION = ${VERSION}"
+	echo "RELEASE = ${RELEASE}"
+	echo "ARCHITECTURE = ${ARCHITECTURE}"
+	echo "SUMMARY = ${SUMMARY}"
+	echo "DESCRIPTION = ${DESCRIPTION}"
+	echo "LICENSE = ${LICENSE}"
+	echo "VENDOR = ${VENDOR}"
+	echo "GROUP = ${GROUP}"
+
+else
+	echo "[NOTICE] NO PROJECT CONF FILE FOUND"
+	
+	# make conf file directory
+	make_directory "${PROJECT_DIRECTORY}"
+	
+	# ask for project details to create a conf file
+
+	# PROJECT NAME
+	echo "[QUESTION] NAME" 
+	echo "Please enter name of the project:"
+	echo "(Default: ${POSSIBLE_PROJECT_NAME})"
+	read PROJECT_NAME
+
+	if [ -z ${PROJECT_NAME} ]; then
+		echo "Defaulting to ${POSSIBLE_PROJECT_NAME}"
+		PROJECT_NAME="${POSSIBLE_PROJECT_NAME}"
+	fi
+	
+	# VERSION
+	echo "[QUESTION] VERSION" 
+	echo "Please enter version of the project (major.minor):"
+	echo "(Default: 1.0)"
+	read VERSION
+
+	if [ -z ${VERSION} ]; then
+		echo "Defaulting to 1.0"
+		VERSION="1.0"
+	fi
+	
+	# RELEASE
+	echo "[QUESTION] RELEASE" 
+	echo "Please enter release of the project:"
+	echo "(Default: 0)"
+	read RELEASE
+
+	if [ -z ${RELEASE} ]; then
+		echo "Defaulting to 0"
+		RELEASE="0"
+	fi
+	
+	# ARCHITECTURE
+	echo "[QUESTION] ARCHITECTURE" 
+	echo "Please enter architecture of the project (x86_64, i686, noarch, etc.):"
+	echo "(Default: x86_64)"
+	read ARCHITECTURE
+
+	if [ -z ${ARCHITECTURE} ]; then
+		echo "Defaulting to x86_64"
+		ARCHITECTURE="x86_64"
+	fi
+	
+	# SUMMARY
+	echo "[QUESTION] SUMMARY" 
+	echo "Please enter a summary for the project:"
+	echo "(Default: 'This is a test')"
+	read SUMMARY
+
+	if [ -z ${SUMMARY} ]; then
+		echo "Defaulting to 'This is a test'"
+		SUMMARY="This is a test"
+	fi
+	
+	# DESCRIPTION
+	echo "[QUESTION] DESCRIPTION" 
+	echo "Please enter a description for the project:"
+	echo "(Default: ${SUMMARY})"
+	read DESCRIPTION
+
+	if [ -z ${DESCRIPTION} ]; then
+		echo "Defaulting to ${SUMMARY}"
+		DESCRIPTION="${SUMMARY}"
+	fi
+	
+	# LICENSE
+	echo "[QUESTION] LICENSE" 
+	echo "Please enter a license for the project:"
+	echo "(Default: 'None')"
+	read LICENSE
+
+	if [ -z ${LICENSE} ]; then
+		echo "Defaulting to 'None'"
+		LICENSE="None"
+	fi
+	
+	# VENDOR
+	echo "[QUESTION] VENDOR" 
+	echo "Please enter the vendor name for the project:"
+	echo "(Default: 'No One')"
+	read VENDOR
+
+	if [ -z ${VENDOR} ]; then
+		echo "Defaulting to 'No One'"
+		VENDOR="No One"
+	fi
+	
+	# GROUP
+	echo "[QUESTION] GROUP" 
+	echo "Please enter the group for the project:"
+	echo "(Default: 'Applications/Productivity')"
+	read GROUP
+
+	if [ -z ${GROUP} ]; then
+		echo "Defaulting to 'Applications/Productivity'"
+		GROUP="Applications/Productivity"
+	fi
+
+	# write everything to the project's conf file
+	cat >${PROJECT_CONF} <<EOL
+PROJECT_NAME="${PROJECT_NAME}"	
+VERSION="${VERSION}"	
+RELEASE="${RELEASE}"
+ARCHITECTURE="${ARCHITECTURE}"	
+SUMMARY="${SUMMARY}"	
+DESCRIPTION="${DESCRIPTION}"
+LICENSE="${LICENSE}"	
+VENDOR="${VENDOR}"	
+GROUP="${GROUP}"
+EOL
+	if [ $? -eq 0 ]; then
+		echo "[SUCCESS] Created ${PROJECT_CONF}"
+	else
+		echo "[ERROR] Failed to create ${PROJECT_CONF}"
+		return 1
+	fi
+
+fi
+
+#PROJECT_NAME="rpmr"
+#VERSION="1.0"
+#RELEASE="0"
+#ARCHITECTURE="x86_64"
+#SUMMARY="Reduces RPM building to a simple config file"
+#DESCRIPTION="Reduces RPM building to a simple config file"
+#LICENSE="MIT"
+#VENDOR="Alchemist.Digital"
+#GROUP="Development/Tools"
 
 # source if building from .tar
 SOURCE=''
 
 # master directory that contains all projects
-PROJECT_HOME="${HOME}/projectdir"
+#PROJECT_HOME="${HOME}/projectdir" # now read from rpmr.conf file
 
 # directory containing current project files
 PROJECT_DIR="${PROJECT_HOME}/${PROJECT_NAME}"
@@ -119,10 +399,10 @@ END
 #
 
 # directory name where RPMs will be built
-RPMBUILD_DIR="rpmbuild"
+#RPMBUILD_DIR="rpmbuild" # now read from rpmr.conf file
 
 # top directory to build RPMs in
-TOPDIR="${HOME}/${RPMBUILD_DIR}"
+#TOPDIR="${HOME}/${RPMBUILD_DIR}" # now read from rpmr.conf file
 
 # file must be named '<name-of-rpm>-<version>-<release>.spec'
 SPEC_FILE="${TOPDIR}/SPECS/${PROJECT_NAME}-${VERSION}-${RELEASE}.spec"
